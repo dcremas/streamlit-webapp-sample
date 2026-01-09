@@ -1,10 +1,19 @@
+import os
 import streamlit as st
 import random
 import time
+from langchain.chat_models import init_chat_model
+from langchain_core.prompts import ChatPromptTemplate
+from dotenv import load_dotenv
+
+load_dotenv()
+
+GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
+llm = init_chat_model("gemini-3-pro-preview", model_provider="google_genai")
 
 st.write("Streamlit loves LLMs! 🤖 [Build your own chat app](https://docs.streamlit.io/develop/tutorials/llms/build-conversational-apps) in minutes, then make it powerful by adding images, dataframes, or even input widgets to the chat.")
 
-st.caption("Note that this demo app isn't actually connected to any LLMs. Those are expensive ;)")
+st.caption("Note that this demo app is connected to the Google Gemini Pro latest version LLMs. Enjoy!!")
 
 # Initialize chat history
 if "messages" not in st.session_state:
@@ -26,20 +35,8 @@ if prompt := st.chat_input("What is up?"):
     # Display assistant response in chat message container
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
-        full_response = ""
-        assistant_response = random.choice(
-            [
-                "Hello there! How can I assist you today?",
-                "Hi, human! Is there anything I can help you with?",
-                "Do you need help?",
-            ]
-        )
-        # Simulate stream of response with milliseconds delay
-        for chunk in assistant_response.split():
-            full_response += chunk + " "
-            time.sleep(0.05)
-            # Add a blinking cursor to simulate typing
-            message_placeholder.markdown(full_response + "▌")
+        response = llm.invoke(prompt)
+        full_response = response.content[0]['text']
         message_placeholder.markdown(full_response)
     # Add assistant response to chat history
     st.session_state.messages.append({"role": "assistant", "content": full_response})
